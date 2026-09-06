@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hermes Quick Capture — Settings</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="panel">
+    <h1>Where should captures go?</h1>
+    <p class="lead">
+      Point this at anything that can receive a JSON POST: your Hermes gateway's
+      webhook endpoint, a Telegram bot via a small relay, or a tool like n8n or
+      Pipedream while you're testing. Leave it blank to stay in demo mode —
+      captures are still logged locally, just not sent anywhere.
+    </p>
+
+    <label for="webhookUrl">Webhook URL</label>
+    <input id="webhookUrl" type="url" placeholder="https://your-hermes-gateway.example.com/capture" />
+
+    <div class="row">
+      <button id="save" class="primary-btn">Save</button>
+      <button id="test" class="secondary-btn">Send test capture</button>
+    </div>
+    <p id="status" class="status" aria-live="polite"></p>
+
+    <h2>What gets sent</h2>
+    <pre class="payload">{
+  "text": "the captured text",
+  "destination": "memory | task | note",
+  "source_url": "https://…",
+  "source_title": "Page title",
+  "captured_at": "2026-09-06T21:04:00.000Z"
+}</pre>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

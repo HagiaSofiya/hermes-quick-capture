@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hermes Quick Capture</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 15L14 6L11 13L21 9" stroke="#3454D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Hermes Quick Capture</span>
+    <button id="openOptions" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <main class="composer">
+    <textarea id="composeText" rows="3" placeholder="Type a quick note for your agent…"></textarea>
+    <div class="chips" id="destinationChips"></div>
+    <button id="sendBtn" class="send-btn">Send</button>
+    <p id="status" class="status" aria-live="polite"></p>
+  </main>
+
+  <section class="history">
+    <h2>Recent</h2>
+    <ul id="historyList" class="history-list"></ul>
+    <p id="historyEmpty" class="history-empty">Nothing sent yet. Select text on any page, or type a note above.</p>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>

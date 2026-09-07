@@ -60,7 +60,6 @@ body {
   padding: 2px;
 }
 .icon-btn:hover { color: var(--ink); }
-.icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 .composer {
   padding: 16px 18px 18px;
@@ -106,7 +105,10 @@ textarea#composeText:focus-visible {
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .chip.is-selected { background: var(--accent); border-color: var(--accent); color: #ffffff; }
-.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.icon-btn:focus-visible, .chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 
 .send-btn {
   all: unset;

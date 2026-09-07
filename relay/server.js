@@ -16,9 +16,13 @@ const DESTINATION_LABELS = { memory: "Memory", task: "Task", note: "Note" };
 
 const app = express();
 
+function errorResponse(res, status, message, extra) {
+  return res.status(status).json({ status: "error", message, ...extra });
+}
+
 function requireToken(req, res, next) {
   if (req.query.token !== process.env.RELAY_SHARED_SECRET) {
-    return res.status(401).json({ status: "error", message: "Invalid or missing token" });
+    return errorResponse(res, 401, "Invalid or missing token");
   }
   next();
 }
@@ -48,7 +52,7 @@ function formatMessage({ text, destination, source_url, source_title }) {
 async function handleCapture(req, res) {
   const errors = validatePayload(req.body);
   if (errors.length) {
-    return res.status(400).json({ status: "error", message: "Invalid payload", errors });
+    return errorResponse(res, 400, "Invalid payload", { errors });
   }
 
   try {
@@ -63,17 +67,13 @@ async function handleCapture(req, res) {
     const tgBody = await tgRes.json().catch(() => ({}));
 
     if (!tgRes.ok || tgBody.ok === false) {
-      return res.status(502).json({
-        status: "error",
-        message: "Telegram API error",
-        detail: tgBody.description || `HTTP ${tgRes.status}`,
-      });
+      return errorResponse(res, 502, "Telegram API error", { detail: tgBody.description || `HTTP ${tgRes.status}` });
     }
 
     return res.status(200).json({ status: "ok" });
   } catch (err) {
     console.error("Unexpected error forwarding capture:", err);
-    return res.status(500).json({ status: "error", message: "Unexpected server error" });
+    return errorResponse(res, 500, "Unexpected server error");
   }
 }
 
@@ -83,10 +83,10 @@ app.post("/capture", requireToken, express.json(), handleCapture);
 // handler runs — catch it here so the client still gets a JSON error shape.
 app.use((err, req, res, next) => {
   if (err.type === "entity.parse.failed") {
-    return res.status(400).json({ status: "error", message: "Malformed JSON body" });
+    return errorResponse(res, 400, "Malformed JSON body");
   }
   console.error("Unhandled error:", err);
-  res.status(500).json({ status: "error", message: "Unexpected server error" });
+  errorResponse(res, 500, "Unexpected server error");
 });
 
 app.listen(PORT, () => {

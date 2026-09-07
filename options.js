@@ -13,14 +13,11 @@ document.getElementById("save").addEventListener("click", async () => {
 
 document.getElementById("test").addEventListener("click", async () => {
   statusEl.textContent = "Sending test capture…";
-  const result = await chrome.runtime.sendMessage({
-    type: "hermes-capture",
-    payload: {
-      text: "Hermes Quick Capture is wired up correctly.",
-      destination: "note",
-      url: "https://example.com",
-      title: "Settings test",
-    },
+  const result = await sendHermesCapture({
+    text: "Hermes Quick Capture is wired up correctly.",
+    destination: "note",
+    url: "https://example.com",
+    title: "Settings test",
   });
   if (result?.ok) {
     statusEl.textContent = result.demo

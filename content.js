@@ -3,15 +3,7 @@
 // destination, done. Everything lives inside a shadow root so the host
 // page's CSS can't touch it (and vice versa).
 
-const DESTINATIONS = [
-  { key: "memory", label: "Memory" },
-  { key: "task", label: "Task" },
-  { key: "note", label: "Note" },
-];
-
 let shadowHost, shadowRoot, pillEl, cardEl, hideTimer;
-
-init();
 
 function init() {
   shadowHost = document.createElement("div");
@@ -40,28 +32,30 @@ function init() {
       toast(resultMessage(message));
     }
     if (message?.type === "hermes-open-card") {
-      const selection = window.getSelection();
-      const text = selection ? selection.toString().trim() : "";
-      openCardAtFixedPosition(text);
+      openCardAtFixedPosition(getSelectedText());
     }
   });
 }
 
 function onMouseUp(e) {
   if (shadowHost.contains(e.target)) return;
-  const selection = window.getSelection();
-  const text = selection ? selection.toString().trim() : "";
+  const text = getSelectedText();
   if (!text || text.length < 2) {
     reset();
     return;
   }
-  const range = selection.getRangeAt(0);
+  const range = window.getSelection().getRangeAt(0);
   const rect = range.getBoundingClientRect();
   showPill(rect, text);
 }
 
 function onDocMouseDown(e) {
   if (!shadowHost.contains(e.target)) reset();
+}
+
+function getSelectedText() {
+  const selection = window.getSelection();
+  return selection ? selection.toString().trim() : "";
 }
 
 function showPill(rect, text) {
@@ -104,19 +98,7 @@ function buildCard() {
   `;
 
   const chipRow = el.querySelector(".hqc-chips");
-  let selected = DESTINATIONS[0].key;
-  DESTINATIONS.forEach((d, i) => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "hqc-chip" + (i === 0 ? " is-selected" : "");
-    chip.textContent = d.label;
-    chip.addEventListener("click", () => {
-      selected = d.key;
-      chipRow.querySelectorAll(".hqc-chip").forEach((c) => c.classList.remove("is-selected"));
-      chip.classList.add("is-selected");
-    });
-    chipRow.appendChild(chip);
-  });
+  const getSelectedDestination = renderDestinationChips(chipRow, "hqc-chip");
 
   el.querySelector(".hqc-close").addEventListener("click", reset);
   el.querySelector(".hqc-send").addEventListener("click", async () => {
@@ -124,11 +106,9 @@ function buildCard() {
     const statusEl = el.querySelector(".hqc-status");
     if (!text) return;
     statusEl.textContent = "Sending…";
-    const result = await chrome.runtime.sendMessage({
-      type: "hermes-capture",
-      payload: { text, destination: selected, url: location.href, title: document.title },
-    });
-    statusEl.textContent = resultMessage({ ...result, destination: selected });
+    const destination = getSelectedDestination();
+    const result = await sendHermesCapture({ text, destination, url: location.href, title: document.title });
+    statusEl.textContent = resultMessage({ ...result, destination });
     if (result?.ok) {
       hideTimer = setTimeout(reset, 1400);
     }
@@ -137,32 +117,29 @@ function buildCard() {
   return el;
 }
 
-function openCard(text) {
+function openCardWithPosition(text, positionFn) {
   pillEl.classList.remove("is-visible");
   clearTimeout(hideTimer);
-  cardEl.querySelector(".hqc-text").value = text;
+  positionFn();
+  const textEl = cardEl.querySelector(".hqc-text");
+  textEl.value = text;
   cardEl.querySelector(".hqc-status").textContent = "";
-  cardEl.style.top = pillEl.style.top;
-  cardEl.style.left = pillEl.style.left;
   cardEl.classList.add("is-visible");
-  cardEl.querySelector(".hqc-text").focus();
+  textEl.focus();
+}
+
+function openCard(text) {
+  openCardWithPosition(text, () => {
+    cardEl.style.top = pillEl.style.top;
+    cardEl.style.left = pillEl.style.left;
+  });
 }
 
 function openCardAtFixedPosition(text) {
-  pillEl.classList.remove("is-visible");
-  clearTimeout(hideTimer);
-  cardEl.style.top = "16px";
-  cardEl.style.left = `${Math.max(8, window.innerWidth - 284)}px`;
-  cardEl.querySelector(".hqc-text").value = text;
-  cardEl.querySelector(".hqc-status").textContent = "";
-  cardEl.classList.add("is-visible");
-  cardEl.querySelector(".hqc-text").focus();
-}
-
-function resultMessage({ ok, demo, error, destination }) {
-  if (!ok) return error || "Couldn't send that.";
-  const label = DESTINATIONS.find((d) => d.key === destination)?.label || "Hermes";
-  return demo ? `Saved (demo) — set a destination in Options to send for real` : `Sent to ${label}`;
+  openCardWithPosition(text, () => {
+    cardEl.style.top = "16px";
+    cardEl.style.left = `${Math.max(8, window.innerWidth - 284)}px`;
+  });
 }
 
 function toast(message) {
@@ -182,7 +159,13 @@ const WING_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xm
 </svg>`;
 
 const STYLES = `
-:host { all: initial; }
+:host {
+  all: initial;
+  --hqc-ink: #14141C;
+  --hqc-paper: #F7F6F2;
+  --hqc-accent: #0000f2;
+  --hqc-accent-hover: #0000c2;
+}
 * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 
 .hqc-pill {
@@ -192,8 +175,8 @@ const STYLES = `
   align-items: center;
   gap: 6px;
   padding: 7px 12px 7px 10px;
-  background: #14141C;
-  color: #F7F6F2;
+  background: var(--hqc-ink);
+  color: var(--hqc-paper);
   border-radius: 999px;
   font-size: 12.5px;
   font-weight: 500;
@@ -203,7 +186,7 @@ const STYLES = `
 }
 .hqc-pill.is-visible { display: inline-flex; }
 .hqc-pill:hover { transform: translateY(-1px); }
-.hqc-pill .hqc-wing { color: #0000f2; flex-shrink: 0; }
+.hqc-pill .hqc-wing { color: var(--hqc-accent); flex-shrink: 0; }
 
 .hqc-card {
   all: unset;
@@ -212,7 +195,7 @@ const STYLES = `
   flex-direction: column;
   width: 260px;
   padding: 12px;
-  background: #F7F6F2;
+  background: var(--hqc-paper);
   border-radius: 14px;
   box-shadow: 0 16px 40px rgba(20, 20, 28, 0.32);
   gap: 8px;
@@ -224,9 +207,9 @@ const STYLES = `
   gap: 6px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #14141C;
+  color: var(--hqc-ink);
 }
-.hqc-card-header .hqc-wing { color: #0000f2; }
+.hqc-card-header .hqc-wing { color: var(--hqc-accent); }
 .hqc-close {
   all: unset;
   margin-left: auto;
@@ -236,7 +219,7 @@ const STYLES = `
   line-height: 1;
   padding: 2px 4px;
 }
-.hqc-close:hover { color: #14141C; }
+.hqc-close:hover { color: var(--hqc-ink); }
 .hqc-text {
   all: unset;
   box-sizing: border-box;
@@ -246,11 +229,11 @@ const STYLES = `
   border: 1px solid #E3E1DA;
   border-radius: 8px;
   font-size: 13px;
-  color: #14141C;
+  color: var(--hqc-ink);
   line-height: 1.4;
   resize: none;
 }
-.hqc-text:focus { border-color: #0000f2; }
+.hqc-text:focus { border-color: var(--hqc-accent); }
 .hqc-chips { display: flex; gap: 6px; }
 .hqc-chip {
   all: unset;
@@ -261,19 +244,19 @@ const STYLES = `
   font-size: 12px;
   cursor: pointer;
 }
-.hqc-chip.is-selected { background: #14141C; color: #F7F6F2; }
+.hqc-chip.is-selected { background: var(--hqc-ink); color: var(--hqc-paper); }
 .hqc-actions { display: flex; justify-content: flex-end; }
 .hqc-send {
   all: unset;
   padding: 7px 16px;
   border-radius: 8px;
-  background: #0000f2;
-  color: #F7F6F2;
+  background: var(--hqc-accent);
+  color: var(--hqc-paper);
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
-.hqc-send:hover { background: #0000c2; }
+.hqc-send:hover { background: var(--hqc-accent-hover); }
 .hqc-status { font-size: 11.5px; color: #6E6E76; min-height: 14px; }
 
 .hqc-toast {
@@ -281,8 +264,8 @@ const STYLES = `
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(8px);
-  background: #14141C;
-  color: #F7F6F2;
+  background: var(--hqc-ink);
+  color: var(--hqc-paper);
   padding: 9px 16px;
   border-radius: 999px;
   font-size: 12.5px;
@@ -292,3 +275,5 @@ const STYLES = `
 }
 .hqc-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 `;
+
+init();

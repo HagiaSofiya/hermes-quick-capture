@@ -2,11 +2,7 @@
 // Owns the one thing that matters: getting a piece of text out of the
 // browser and into wherever the user's Hermes agent listens.
 
-const DESTINATIONS = {
-  memory: { label: "Memory", verb: "Saved to memory" },
-  task: { label: "Task", verb: "Added as a task" },
-  note: { label: "Note", verb: "Saved as a note" },
-};
+importScripts("shared.js");
 
 const MENU_PARENT = "hermes-capture-parent";
 const HISTORY_LIMIT = 20;
@@ -17,19 +13,19 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Send to Hermes",
     contexts: ["selection"],
   });
-  for (const [key, meta] of Object.entries(DESTINATIONS)) {
+  DESTINATIONS.forEach((d) => {
     chrome.contextMenus.create({
-      id: `hermes-capture-${key}`,
+      id: `hermes-capture-${d.key}`,
       parentId: MENU_PARENT,
-      title: meta.label,
+      title: d.label,
       contexts: ["selection"],
     });
-  }
+  });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const destination = info.menuItemId.replace("hermes-capture-", "");
-  if (!DESTINATIONS[destination]) return;
+  if (!findDestination(destination)) return;
   const result = await sendCapture({
     text: info.selectionText || "",
     destination,
@@ -51,7 +47,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message?.type === "hermes-capture") {
+  if (message?.type === HERMES_CAPTURE_TYPE) {
     sendCapture(message.payload).then(sendResponse);
     return true; // keep the channel open for the async response
   }

@@ -1,28 +1,9 @@
-const DESTINATIONS = [
-  { key: "memory", label: "Memory" },
-  { key: "task", label: "Task" },
-  { key: "note", label: "Note" },
-];
-
-let selectedDestination = DESTINATIONS[0].key;
-
 document.getElementById("openOptions").addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
 });
 
 const chipRow = document.getElementById("destinationChips");
-DESTINATIONS.forEach((d, i) => {
-  const chip = document.createElement("button");
-  chip.type = "button";
-  chip.className = "chip" + (i === 0 ? " is-selected" : "");
-  chip.textContent = d.label;
-  chip.addEventListener("click", () => {
-    selectedDestination = d.key;
-    chipRow.querySelectorAll(".chip").forEach((c) => c.classList.remove("is-selected"));
-    chip.classList.add("is-selected");
-  });
-  chipRow.appendChild(chip);
-});
+const getSelectedDestination = renderDestinationChips(chipRow, "chip");
 
 document.getElementById("sendBtn").addEventListener("click", async () => {
   const textEl = document.getElementById("composeText");
@@ -32,24 +13,13 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
 
   statusEl.textContent = "Sending…";
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const result = await chrome.runtime.sendMessage({
-    type: "hermes-capture",
-    payload: {
-      text,
-      destination: selectedDestination,
-      url: tab?.url || "",
-      title: tab?.title || "",
-    },
-  });
+  const destination = getSelectedDestination();
+  const result = await sendHermesCapture({ text, destination, url: tab?.url || "", title: tab?.title || "" });
 
+  statusEl.textContent = resultMessage({ ...result, destination }, { verb: "as" });
   if (result?.ok) {
-    statusEl.textContent = result.demo
-      ? "Saved (demo) — set a destination in Options to send for real"
-      : `Sent as ${DESTINATIONS.find((d) => d.key === selectedDestination).label}`;
     textEl.value = "";
     loadHistory();
-  } else {
-    statusEl.textContent = result?.error || "Couldn't send that.";
   }
 });
 
@@ -68,7 +38,7 @@ async function loadHistory() {
   for (const item of history) {
     const li = document.createElement("li");
     li.className = "history-item";
-    const label = DESTINATIONS.find((d) => d.key === item.destination)?.label || item.destination;
+    const label = destinationLabel(item.destination, item.destination);
     li.innerHTML = `
       <span class="status-dot ${item.status}"></span>
       <span class="history-body">

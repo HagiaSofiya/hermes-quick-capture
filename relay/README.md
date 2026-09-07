@@ -49,28 +49,39 @@ You should see `Hermes Quick Capture relay listening on port 3000`. If a
 required env var is missing, the server logs exactly which one and exits
 instead of running half-configured.
 
-## 4. Expose it temporarily with ngrok
+## 4. Expose it with ngrok, using a free static domain
 
-The extension runs in your browser and the relay runs on your machine, so for a
-demo you need a public URL pointing at your local port. [ngrok](https://ngrok.com)
-(or an equivalent like Cloudflare Tunnel) does this:
+The extension runs in your browser and the relay runs on your machine, so you
+need a public URL pointing at your local port. [ngrok](https://ngrok.com) does
+this — but `ngrok http 3000` on its own hands you a random subdomain every
+time you start it, meaning a new webhook URL to paste into Options every
+session. Skip that with ngrok's free static domain instead (every account,
+including the free tier, gets one — permanently, at no cost):
 
-```bash
-ngrok http 3000
-```
+1. Log in at [dashboard.ngrok.com](https://dashboard.ngrok.com), go to
+   **Universal Edge → Domains**, and claim your static domain — something
+   like `your-name.ngrok-free.dev`. This is a one-time setup; the domain is
+   yours for as long as your account exists.
+2. From then on, always tunnel with that domain:
 
-Copy the `https://<random-id>.ngrok-free.app` forwarding URL it prints.
+   ```bash
+   ngrok http 3000 --domain=your-name.ngrok-free.dev
+   ```
+
+Same command, same URL, every time you start the relay.
 
 ## 5. Point the extension at it
 
 In the extension's Options page, set the webhook URL to:
 
 ```
-https://<random-id>.ngrok-free.app/capture?token=<your RELAY_SHARED_SECRET>
+https://your-name.ngrok-free.dev/capture?token=<your RELAY_SHARED_SECRET>
 ```
 
-Save, then use Options' "send test capture" button or select text on any page
-and send it — it should show up in your Telegram chat within a second or two.
+Save once — since the domain never changes, you won't need to touch Options
+again, even after restarting the relay or ngrok. Use Options' "send test
+capture" button or select text on any page and send it — it should show up
+in your Telegram chat within a second or two.
 
 ## Error responses
 

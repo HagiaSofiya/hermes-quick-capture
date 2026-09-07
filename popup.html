@@ -3,15 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <title>Hermes Quick Capture</title>
+  <link rel="icon" type="image/png" href="icons/icon32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <header class="header">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 15L14 6L11 13L21 9" stroke="#3454D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>Hermes Quick Capture</span>
-    <button id="openOptions" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+    <img class="logo" src="icons/icon48.png" alt="" width="20" height="20" />
+    <span class="title">Hermes Quick Capture</span>
+    <button id="openOptions" class="icon-btn" title="Settings" aria-label="Settings">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="14" height="14" stroke="currentColor" stroke-width="2"/>
+        <rect x="4" y="4" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </button>
   </header>
 
   <main class="composer">

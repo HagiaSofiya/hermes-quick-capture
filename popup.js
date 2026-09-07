@@ -71,13 +71,25 @@ async function loadHistory() {
     const label = DESTINATIONS.find((d) => d.key === item.destination)?.label || item.destination;
     li.innerHTML = `
       <span class="status-dot ${item.status}"></span>
-      <span>
-        <span class="history-text">${escapeHtml(truncate(item.text, 70))}</span><br/>
-        <span class="history-meta">${label} · ${relativeTime(item.ts)}</span>
+      <span class="history-body">
+        <span class="history-text">${escapeHtml(truncate(item.text, 70))}</span>
+        <span class="history-meta">
+          <span>${label}</span>
+          <span>·</span>
+          <span>${relativeTime(item.ts)}</span>
+          <span>·</span>
+          <span class="history-status status-${item.status}">${statusLabel(item.status)}</span>
+        </span>
       </span>
     `;
     list.appendChild(li);
   }
+}
+
+function statusLabel(status) {
+  if (status === "sent") return "Sent";
+  if (status === "demo") return "Demo";
+  return "Failed";
 }
 
 function truncate(str, n) {

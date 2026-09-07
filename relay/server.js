@@ -61,6 +61,7 @@ async function handleCapture(req, res) {
       }),
     });
     const tgBody = await tgRes.json().catch(() => ({}));
+
     if (!tgRes.ok || tgBody.ok === false) {
       return res.status(502).json({
         status: "error",
@@ -68,6 +69,7 @@ async function handleCapture(req, res) {
         detail: tgBody.description || `HTTP ${tgRes.status}`,
       });
     }
+
     return res.status(200).json({ status: "ok" });
   } catch (err) {
     console.error("Unexpected error forwarding capture:", err);

@@ -203,7 +203,7 @@ const STYLES = `
 }
 .hqc-pill.is-visible { display: inline-flex; }
 .hqc-pill:hover { transform: translateY(-1px); }
-.hqc-pill .hqc-wing { color: #6C86FF; flex-shrink: 0; }
+.hqc-pill .hqc-wing { color: #0000f2; flex-shrink: 0; }
 
 .hqc-card {
   all: unset;
@@ -226,7 +226,7 @@ const STYLES = `
   font-weight: 600;
   color: #14141C;
 }
-.hqc-card-header .hqc-wing { color: #3454D1; }
+.hqc-card-header .hqc-wing { color: #0000f2; }
 .hqc-close {
   all: unset;
   margin-left: auto;
@@ -250,7 +250,7 @@ const STYLES = `
   line-height: 1.4;
   resize: none;
 }
-.hqc-text:focus { border-color: #3454D1; }
+.hqc-text:focus { border-color: #0000f2; }
 .hqc-chips { display: flex; gap: 6px; }
 .hqc-chip {
   all: unset;
@@ -267,13 +267,13 @@ const STYLES = `
   all: unset;
   padding: 7px 16px;
   border-radius: 8px;
-  background: #3454D1;
+  background: #0000f2;
   color: #F7F6F2;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
-.hqc-send:hover { background: #2C46B3; }
+.hqc-send:hover { background: #0000c2; }
 .hqc-status { font-size: 11.5px; color: #6E6E76; min-height: 14px; }
 
 .hqc-toast {

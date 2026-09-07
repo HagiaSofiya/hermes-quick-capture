@@ -14,7 +14,8 @@ clicks, from wherever you already are.
 1. Open `chrome://extensions`
 2. Turn on **Developer mode** (top right)
 3. Click **Load unpacked**, and select this folder
-4. Select some text on any webpage, or click the toolbar icon
+4. Select some text on any webpage, click the toolbar icon, or press
+   `Ctrl+Shift+H` (`Cmd+Shift+H` on Mac) to open the capture card
 
 Out of the box it runs in **demo mode**: captures are logged locally (visible
 in the popup's Recent list) but nothing leaves the machine. Go to the
@@ -40,15 +41,18 @@ Three ways to make that real, roughly in order of effort:
 - **Fastest for a demo:** a free [Pipedream](https://pipedream.com) or
   [n8n](https://n8n.io) webhook that forwards the payload to a Telegram bot
   you've already paired with your Hermes gateway.
-- **Closer to the real thing:** a small local relay that receives the POST
-  and calls Hermes's messaging gateway directly (Telegram/Discord/Slack),
-  so it lands in the same conversation your agent already remembers.
+- **Included here:** [`relay/`](relay/) is a small Node/Express server that
+  receives the POST and forwards it to a Telegram chat via the Bot API, so
+  it lands in the same conversation your agent already reads. See
+  [`relay/README.md`](relay/README.md) for setup — get a bot token, run it
+  locally, expose it with ngrok, point the extension at it.
 - **Most direct:** if your Hermes instance exposes an MCP server or an HTTP
   endpoint you control, point the webhook straight at it and skip the relay.
 
-None of that is built here. The extension's job is the capture experience;
-the delivery target is deliberately a plain webhook so it can point at
-whatever you're running.
+The extension's job is the capture experience; the delivery target is
+deliberately a plain webhook so it can point at whatever you're running —
+swapping the relay's one Telegram `fetch` call for a call to your own
+gateway is enough to repoint it.
 
 ## How it's built
 
@@ -62,15 +66,10 @@ whatever you're running.
     capture" button.
   - `background.js` — the service worker that actually does the fetch,
     handles the right-click context menu ("Send to Hermes → Memory/Task/
-    Note"), and keeps a capped local history in `chrome.storage.local`.
+    Note") and the `Ctrl+Shift+H` / `Cmd+Shift+H` shortcut, and keeps a
+    capped local history in `chrome.storage.local`.
 - Settings live in `chrome.storage.sync` so they follow you across a synced
   Chrome profile.
-
-## What I'd build next
-
-- A real relay into a Hermes Telegram bot, so this is end-to-end for the demo
-  rather than webhook-shaped.
-- Keyboard shortcut to open the capture card without touching the mouse.
-- Firefox/Safari manifest variants — the core logic doesn't use anything
-  Chrome-specific except the `chrome.*` APIs, which map closely to
-  `browser.*` in Firefox.
+- [`relay/`](relay/) is an optional companion server (not part of the
+  extension) that forwards captures to Telegram — see
+  [`relay/README.md`](relay/README.md).

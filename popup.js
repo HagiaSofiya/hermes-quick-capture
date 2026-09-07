@@ -3,23 +3,59 @@ document.getElementById("openOptions").addEventListener("click", () => {
 });
 
 const chipRow = document.getElementById("destinationChips");
-const getSelectedDestination = renderDestinationChips(chipRow, "chip");
+const getSelectedAction = renderActionChips(chipRow, "chip");
 
 document.getElementById("sendBtn").addEventListener("click", async () => {
   const textEl = document.getElementById("composeText");
+  const instructionEl = document.getElementById("composeInstruction");
   const statusEl = document.getElementById("status");
   const text = textEl.value.trim();
+  const instruction = instructionEl.value.trim();
   if (!text) return;
 
   statusEl.textContent = "Sending…";
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const destination = getSelectedDestination();
-  const result = await sendHermesCapture({ text, destination, url: tab?.url || "", title: tab?.title || "" });
+  const action = getSelectedAction();
+  const result = await sendHermesCapture({ text, action, instruction, url: tab?.url || "", title: tab?.title || "" });
 
-  statusEl.textContent = resultMessage({ ...result, destination }, { verb: "as" });
+  statusEl.textContent = resultMessage({ ...result, action }, { verb: "as" });
   if (result?.ok) {
     textEl.value = "";
+    instructionEl.value = "";
     loadHistory();
+  }
+});
+
+document.getElementById("capturePageBtn").addEventListener("click", async () => {
+  const instructionEl = document.getElementById("composeInstruction");
+  const statusEl = document.getElementById("status");
+  const instruction = instructionEl.value.trim();
+
+  statusEl.textContent = "Capturing page…";
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  
+  try {
+    const [{ result: pageText }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => document.body.innerText,
+    });
+
+    const action = getSelectedAction();
+    const result = await sendHermesCapture({
+      text: pageText.slice(0, 5000), // cap at 5k chars
+      action,
+      instruction,
+      url: tab?.url || "",
+      title: tab?.title || "",
+    });
+
+    statusEl.textContent = resultMessage({ ...result, action }, { verb: "as" });
+    if (result?.ok) {
+      instructionEl.value = "";
+      loadHistory();
+    }
+  } catch (err) {
+    statusEl.textContent = "Couldn't capture this page.";
   }
 });
 
@@ -38,13 +74,14 @@ async function loadHistory() {
   for (const item of history) {
     const li = document.createElement("li");
     li.className = "history-item";
-    const label = destinationLabel(item.destination, item.destination);
+    const label = actionLabel(item.action, item.action);
+    const instructionSnippet = item.instruction ? ` — ${escapeHtml(truncate(item.instruction, 40))}` : "";
     li.innerHTML = `
       <span class="status-dot ${item.status}"></span>
       <span class="history-body">
         <span class="history-text">${escapeHtml(truncate(item.text, 70))}</span>
         <span class="history-meta">
-          <span>${label}</span>
+          <span>${label}${instructionSnippet}</span>
           <span>·</span>
           <span>${relativeTime(item.ts)}</span>
           <span>·</span>

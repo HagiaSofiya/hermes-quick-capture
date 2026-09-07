@@ -98,5 +98,25 @@ This relay's only Hermes-specific logic is the `fetch` call in `handleCapture`
 that hits `api.telegram.org/bot<token>/sendMessage`. To go further later, swap
 that call for a `fetch` to your Hermes gateway's own HTTP endpoint (passing
 whatever shape it expects) — the payload arriving at this relay from the
-extension (`text`, `destination`, `source_url`, `source_title`, `captured_at`)
-doesn't need to change, and neither does the extension.
+extension is:
+
+The extension POSTs this JSON payload:
+
+```json
+{
+  "request_id": "uuid",
+  "action": "summarize | explain | save_memory | create_task | research_note",
+  "instruction": "optional user-provided intent/question",
+  "text": "the captured text or page content",
+  "source_url": "https://…",
+  "source_title": "Page title",
+  "captured_at": "2026-09-07T00:00:00.000Z"
+}
+```
+
+The relay formats this into a Telegram message showing:
+- Action (Summarize / Explain / Save Memory / Create Task / Research Note)
+- Instruction (if provided)
+- Context (the captured text)
+- Source page title + URL
+- Request ID (for correlation)

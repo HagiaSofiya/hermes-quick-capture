@@ -15,7 +15,8 @@ document.getElementById("test").addEventListener("click", async () => {
   statusEl.textContent = "Sending test capture…";
   const result = await sendHermesCapture({
     text: "Hermes Quick Capture is wired up correctly.",
-    destination: "note",
+    action: "research_note",
+    instruction: "Verify that the relay is receiving and forwarding captures.",
     url: "https://example.com",
     title: "Settings test",
   });

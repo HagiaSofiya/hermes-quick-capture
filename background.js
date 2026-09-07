@@ -13,22 +13,22 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Send to Hermes",
     contexts: ["selection"],
   });
-  DESTINATIONS.forEach((d) => {
+  ACTIONS.forEach((a) => {
     chrome.contextMenus.create({
-      id: `hermes-capture-${d.key}`,
+      id: `hermes-capture-${a.key}`,
       parentId: MENU_PARENT,
-      title: d.label,
+      title: a.label,
       contexts: ["selection"],
     });
   });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  const destination = info.menuItemId.replace("hermes-capture-", "");
-  if (!findDestination(destination)) return;
+  const action = info.menuItemId.replace("hermes-capture-", "");
+  if (!findAction(action)) return;
   const result = await sendCapture({
     text: info.selectionText || "",
-    destination,
+    action,
     url: tab?.url || "",
     title: tab?.title || "",
   });
@@ -59,7 +59,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 });
 
-async function sendCapture({ text, destination, url, title }) {
+async function sendCapture({ text, action, instruction, url, title }) {
   const trimmed = (text || "").trim();
   if (!trimmed) return { ok: false, error: "Nothing to send." };
 
@@ -67,7 +67,8 @@ async function sendCapture({ text, destination, url, title }) {
   const record = {
     id: crypto.randomUUID(),
     text: trimmed,
-    destination,
+    action,
+    instruction: instruction || "",
     url,
     title,
     ts: Date.now(),
@@ -79,7 +80,7 @@ async function sendCapture({ text, destination, url, title }) {
     // honest with the user that nothing left the machine.
     record.status = "demo";
     await appendHistory(record);
-    return { ok: true, demo: true, destination };
+    return { ok: true, demo: true, action };
   }
 
   try {
@@ -87,8 +88,10 @@ async function sendCapture({ text, destination, url, title }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        request_id: record.id,
+        action,
+        instruction: instruction || "",
         text: trimmed,
-        destination,
         source_url: url,
         source_title: title,
         captured_at: new Date(record.ts).toISOString(),
@@ -97,7 +100,7 @@ async function sendCapture({ text, destination, url, title }) {
     record.status = res.ok ? "sent" : "error";
     await appendHistory(record);
     if (!res.ok) return { ok: false, error: `Hermes replied with ${res.status}.` };
-    return { ok: true, demo: false, destination };
+    return { ok: true, demo: false, action };
   } catch (err) {
     record.status = "error";
     await appendHistory(record);

@@ -1,13 +1,20 @@
 # Hermes Quick Capture
 
-A tiny Chrome extension: select text on any page, pick "Memory," "Task," or
-"Note," and it's on its way to your Hermes agent. No opening a chat window,
-no switching apps.
+A Chrome extension for your Hermes agent: select text or capture a page,
+pick an action (Summarize, Explain, Save Memory, Create Task, Research Note),
+optionally add an instruction, and send it straight to your agent. No
+switching apps, no opening chat windows.
+
+**Actions:**
+- **Summarize** — get a concise summary
+- **Explain** — simplify complex text
+- **Save Memory** — store a durable fact
+- **Create Task** — turn content into an action item
+- **Research Note** — save a source for later synthesis
 
 Hermes's pitch is "one agent, one memory, every surface." This is one more
-surface: the moment you're reading something and think "the agent should
-know this," instead of that thought evaporating, you can act on it in two
-clicks, from wherever you already are.
+surface: instead of that thought evaporating when you read something worth
+acting on, you can capture it in two clicks.
 
 ## Load it
 
@@ -28,11 +35,13 @@ Options:
 
 ```json
 {
-  "text": "the captured text",
-  "destination": "memory | task | note",
+  "request_id": "uuid",
+  "action": "summarize | explain | save_memory | create_task | research_note",
+  "instruction": "optional user-provided intent/question",
+  "text": "selected text or page content",
   "source_url": "https://…",
   "source_title": "Page title",
-  "captured_at": "2026-09-06T21:04:00.000Z"
+  "captured_at": "2026-09-07T00:00:00.000Z"
 }
 ```
 

@@ -5,29 +5,31 @@
 
 const HERMES_CAPTURE_TYPE = "hermes-capture";
 
-const DESTINATIONS = [
-  { key: "memory", label: "Memory" },
-  { key: "task", label: "Task" },
-  { key: "note", label: "Note" },
+const ACTIONS = [
+  { key: "summarize", label: "Summarize" },
+  { key: "explain", label: "Explain" },
+  { key: "save_memory", label: "Save Memory" },
+  { key: "create_task", label: "Create Task" },
+  { key: "research_note", label: "Research Note" },
 ];
 
-function findDestination(key) {
-  return DESTINATIONS.find((d) => d.key === key);
+function findAction(key) {
+  return ACTIONS.find((a) => a.key === key);
 }
 
-function destinationLabel(key, fallback) {
-  return findDestination(key)?.label || fallback;
+function actionLabel(key, fallback) {
+  return findAction(key)?.label || fallback;
 }
 
-function renderDestinationChips(container, chipClass) {
-  let selected = DESTINATIONS[0].key;
-  DESTINATIONS.forEach((d, i) => {
+function renderActionChips(container, chipClass) {
+  let selected = ACTIONS[0].key;
+  ACTIONS.forEach((a, i) => {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = chipClass + (i === 0 ? " is-selected" : "");
-    chip.textContent = d.label;
+    chip.textContent = a.label;
     chip.addEventListener("click", () => {
-      selected = d.key;
+      selected = a.key;
       container.querySelectorAll("." + chipClass).forEach((c) => c.classList.remove("is-selected"));
       chip.classList.add("is-selected");
     });
@@ -36,9 +38,9 @@ function renderDestinationChips(container, chipClass) {
   return () => selected;
 }
 
-function resultMessage({ ok, demo, error, destination }, { verb = "to" } = {}) {
+function resultMessage({ ok, demo, error, action }, { verb = "to" } = {}) {
   if (!ok) return error || "Couldn't send that.";
-  const label = destinationLabel(destination, "Hermes");
+  const label = actionLabel(action, "Hermes");
   return demo ? `Saved (demo) — set a destination in Options to send for real` : `Sent ${verb} ${label}`;
 }
 

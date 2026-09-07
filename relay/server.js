@@ -12,7 +12,13 @@ if (missing.length) {
 }
 
 const PORT = process.env.PORT || 3000;
-const DESTINATION_LABELS = { memory: "Memory", task: "Task", note: "Note" };
+const ACTION_LABELS = { 
+  summarize: "Summarize", 
+  explain: "Explain", 
+  save_memory: "Save Memory", 
+  create_task: "Create Task", 
+  research_note: "Research Note" 
+};
 
 const app = express();
 
@@ -32,20 +38,32 @@ function validatePayload(body) {
   if (typeof body?.text !== "string" || !body.text.trim()) {
     errors.push("text is required and must be a non-empty string");
   }
-  if (!DESTINATION_LABELS[body?.destination]) {
-    errors.push(`destination must be one of: ${Object.keys(DESTINATION_LABELS).join(", ")}`);
+  if (!ACTION_LABELS[body?.action]) {
+    errors.push(`action must be one of: ${Object.keys(ACTION_LABELS).join(", ")}`);
   }
   return errors;
 }
 
 // Plain text, deliberately no parse_mode — captured text is arbitrary and may
 // contain Markdown-special characters that would make Telegram reject the message.
-function formatMessage({ text, destination, source_url, source_title }) {
-  const lines = [`New ${DESTINATION_LABELS[destination]}`, "", text.trim()];
+function formatMessage({ request_id, action, instruction, text, source_url, source_title }) {
+  const lines = [`🤖 ${ACTION_LABELS[action]}`];
+  
+  if (instruction && instruction.trim()) {
+    lines.push("", `📋 ${instruction.trim()}`);
+  }
+  
+  lines.push("", "📄 Context:", text.trim());
+  
   if (source_title || source_url) {
-    lines.push("", `From: ${source_title || "Untitled page"}`);
+    lines.push("", `🔗 From: ${source_title || "Untitled page"}`);
     if (source_url) lines.push(source_url);
   }
+  
+  if (request_id) {
+    lines.push("", `ID: ${request_id}`);
+  }
+  
   return lines.join("\n");
 }
 

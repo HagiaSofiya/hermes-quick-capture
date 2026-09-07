@@ -89,8 +89,9 @@ function buildCard() {
       <span>Send to Hermes</span>
       <button class="hqc-close" type="button" aria-label="Close">&times;</button>
     </div>
-    <textarea class="hqc-text" rows="3"></textarea>
-    <div class="hqc-chips" role="group" aria-label="Destination"></div>
+    <textarea class="hqc-text" rows="3" placeholder="Selected text (edit if needed)"></textarea>
+    <textarea class="hqc-instruction" rows="2" placeholder="What should Hermes do? (optional)"></textarea>
+    <div class="hqc-chips" role="group" aria-label="Action"></div>
     <div class="hqc-actions">
       <button class="hqc-send" type="button">Send</button>
     </div>
@@ -98,17 +99,18 @@ function buildCard() {
   `;
 
   const chipRow = el.querySelector(".hqc-chips");
-  const getSelectedDestination = renderDestinationChips(chipRow, "hqc-chip");
+  const getSelectedAction = renderActionChips(chipRow, "hqc-chip");
 
   el.querySelector(".hqc-close").addEventListener("click", reset);
   el.querySelector(".hqc-send").addEventListener("click", async () => {
     const text = el.querySelector(".hqc-text").value.trim();
+    const instruction = el.querySelector(".hqc-instruction").value.trim();
     const statusEl = el.querySelector(".hqc-status");
     if (!text) return;
     statusEl.textContent = "Sending…";
-    const destination = getSelectedDestination();
-    const result = await sendHermesCapture({ text, destination, url: location.href, title: document.title });
-    statusEl.textContent = resultMessage({ ...result, destination });
+    const action = getSelectedAction();
+    const result = await sendHermesCapture({ text, action, instruction, url: location.href, title: document.title });
+    statusEl.textContent = resultMessage({ ...result, action });
     if (result?.ok) {
       hideTimer = setTimeout(reset, 1400);
     }
@@ -234,6 +236,20 @@ const STYLES = `
   resize: none;
 }
 .hqc-text:focus { border-color: var(--hqc-accent); }
+.hqc-instruction {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E3E1DA;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--hqc-ink);
+  line-height: 1.4;
+  resize: none;
+}
+.hqc-instruction:focus { border-color: var(--hqc-accent); }
 .hqc-chips { display: flex; gap: 6px; }
 .hqc-chip {
   all: unset;

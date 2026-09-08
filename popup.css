@@ -88,9 +88,10 @@ textarea#composeText:focus-visible {
   box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
-.chips { display: flex; gap: 8px; }
+.chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .chip {
   all: unset;
+  box-sizing: border-box;
   padding: 7px 16px;
   border-radius: 0;
   border: 1.5px solid var(--border-pill);
@@ -101,6 +102,7 @@ textarea#composeText:focus-visible {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  text-align: center;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
@@ -145,6 +147,12 @@ textarea#composeText:focus-visible {
   letter-spacing: 0.06em;
   color: var(--ink-secondary);
 }
+.history-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.history-head h2 { margin: 0; }
 
 .history-list {
   list-style: none;

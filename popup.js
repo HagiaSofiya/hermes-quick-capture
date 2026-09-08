@@ -2,6 +2,11 @@ document.getElementById("openOptions").addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
 });
 
+document.getElementById("clearHistory").addEventListener("click", async () => {
+  await chrome.storage.local.remove("history");
+  loadHistory();
+});
+
 const chipRow = document.getElementById("destinationChips");
 const getSelectedDestination = renderDestinationChips(chipRow, "chip");
 

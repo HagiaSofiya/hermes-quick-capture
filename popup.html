@@ -28,7 +28,16 @@
   </main>
 
   <section class="history">
-    <h2>Recent</h2>
+    <div class="history-head">
+      <h2>Recent</h2>
+      <button id="clearHistory" class="icon-btn" title="Clear history" aria-label="Clear history">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 4H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M5.5 4V2.5C5.5 2.22386 5.72386 2 6 2H10C10.2761 2 10.5 2.22386 10.5 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M3.5 4L4 13.5C4.02 13.87 4.33 14 4.7 14H11.3C11.67 14 11.98 13.87 12 13.5L12.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
     <ul id="historyList" class="history-list"></ul>
     <p id="historyEmpty" class="history-empty">Nothing sent yet. Select text on any page, or type a note above.</p>
   </section>
